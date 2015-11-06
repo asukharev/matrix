@@ -18,6 +18,14 @@ impl MyClone for u16 {
     fn clone(&self) -> Self { *self }
 }
 
+impl MyClone for String {
+    fn clone(&self) -> Self {
+        let mut s = String::from("");
+        s.push_str(self);
+        s
+    }
+}
+
 pub trait Convert<T> {
     fn into_matrix(&self, s: &Size) -> M<T>;
 }
@@ -77,18 +85,24 @@ impl<T> Matrix<T> for M<T> where T: Default + MyClone {
 
 #[test]
 fn it_works() {
-    let v: Vec<u16> = vec![1,2,3];
-    let mut m = v.into_matrix(&(3,3));
-    assert_eq!(m.values, vec![1, 2, 3, 0, 0, 0, 0, 0, 0]);
+    // let v: Vec<u16> = vec![1,2,3];
+    // let mut m = v.into_matrix(&(3,3));
+    // assert_eq!(m.values, vec![1, 2, 3, 0, 0, 0, 0, 0, 0]);
+    // let p = &(1,1);
+    // m.set(p, 2);
+    // assert_eq!(m.values, vec![1, 2, 3, 0, 2, 0, 0, 0, 0]);
+    // let gv = m.get(p);
+    // assert_eq!(gv, 2);
+    // let mt: M<u16> = m.transpose();
+    // assert_eq!(mt.values, vec![1, 0, 0, 2, 2, 0, 3, 0, 0]);
+    // // assert_eq!(m.sum(&mt).values, vec![2, 2, 3, 2, 4, 0, 3, 0, 0]);
 
-    let p = &(1,1);
-    m.set(p, 2);
-    assert_eq!(m.values, vec![1, 2, 3, 0, 2, 0, 0, 0, 0]);
-    let gv = m.get(p);
-    assert_eq!(gv, 2);
+    let v: Vec<String> = vec!["A".to_string(), "B".to_string(), "C".to_string()];
+    let mut m: M<String> = v.into_matrix(&(2,3));
+    println!("{:?}", m);
+    let mt: M<String> = m.transpose();
+    println!("{:?}", mt);
+    // assert_eq!(m.values, vec![1, 2, 3, 0, 0, 0, 0, 0, 0]);
 
-    let mt: M<u16> = m.transpose();
-    assert_eq!(mt.values, vec![1, 0, 0, 2, 2, 0, 3, 0, 0]);
-
-    // assert_eq!(m.sum(&mt).values, vec![2, 2, 3, 2, 4, 0, 3, 0, 0]);
+    assert!(false);
 }
