@@ -43,12 +43,6 @@ impl Matrix for M {
         self.values[p.column() + (p.row() * self.columns)] = v;
     }
     fn get(&self, p: &Position) -> u8 {
-        // println!("{:?} + ({:?} * {:?}) = {:?}",
-        //     p.column(),
-        //     p.row(),
-        //     self.rows,
-        //     p.column() + ( p.row() * self.columns )
-        // );
         self.values[p.column() + (p.row() * self.columns)]
     }
     fn sum(&self, m: &M) -> M {
@@ -60,38 +54,30 @@ impl Matrix for M {
         M { rows: self.rows, columns: self.columns, values: v}
     }
     fn transpose(&self) -> M {
-        println!("{:?}", self);
-        let count = self.rows * self.columns;
-        let mut rm: M =
-            (0..count)
-            .map(|_| 0)
-            .collect::<Vec<u8>>()
-            .into_matrix(&(self.columns, self.rows));
-        for row in 0..self.rows {
-            for column in 0..self.columns {
+        let mut v: Vec<u8> = Vec::new();
+        for column in 0..self.columns {
+            for row in 0..self.rows {
                 let value = self.get(&(row, column));
-                println!("{:?} => {:?} => {:?}\n", (row, column), value, (column, row));
-                rm.set(&(column, row), value);
+                v.push(value);
             }
         }
-        println!("{:?}", rm);
-        rm
+        v.into_matrix(&(self.columns, self.rows))
     }
 }
 
 #[test]
 fn it_works() {
-    let mut m: M = vec![1,2,3].into_matrix(&(2,3));
-    assert_eq!(m.values, vec![1,2,3,0,0,0]);
+    let mut m: M = vec![1,2,3].into_matrix(&(3,3));
+    assert_eq!(m.values, vec![1, 2, 3, 0, 0, 0, 0, 0, 0]);
 
     let p = (1,1);
     m.set(&p, 2);
-    assert_eq!(m.values, vec![1,2,3,0,2,0]);
+    assert_eq!(m.values, vec![1, 2, 3, 0, 2, 0, 0, 0, 0]);
     let gv = m.get(&p);
     assert_eq!(gv, 2);
 
     let mt: M = m.transpose();
-    assert_eq!(mt.values, vec![1,3,0,2,0,0]);
+    assert_eq!(mt.values, vec![1, 0, 0, 2, 2, 0, 3, 0, 0]);
 
-    // assert_eq!(m.sum(&mt).values, vec![2,5,5,2]);
+    assert_eq!(m.sum(&mt).values, vec![2, 2, 3, 2, 4, 0, 3, 0, 0]);
 }
