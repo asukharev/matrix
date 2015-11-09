@@ -5,8 +5,8 @@ use size::Size;
 
 #[derive(Debug, Default)]
 pub struct M<T> {
-    rows: usize,
-    columns: usize,
+    pub rows: usize,
+    pub columns: usize,
     values: Vec<T>
 }
 
