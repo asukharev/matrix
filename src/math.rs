@@ -52,16 +52,61 @@ use std::ops::Mul;
 impl Mul for M<u16> {
     type Output = Result<M<u16>, String>;
     fn mul(self, m: M<u16>) -> Result<M<u16>, String> {
-        if (self.rows != m.rows) && (self.columns != m.columns) {
-            // assert!((self.rows == m.rows) & (self.columns == m.columns));
-            Err("Some error message2".to_string())
+        if self.columns != m.rows {
+            Err("Some error message3".to_string())
         }
         else {
-            let zv = self.values.iter().zip(&m.values);
-            let v: Vec<u16> = zv.map(|(a, b)| {
-                a + b
-            }).collect();
-            Ok(M { rows: self.rows, columns: self.columns, values: v})
+            let mut mr: Vec<u16> = Vec::new();
+            for va in self.values.chunks(self.columns) {
+                let mut m_row: Vec<u16> = Vec::new();
+                for column in 0..va.len() {
+                    let vb: Vec<_> = m.values.iter().enumerate().filter_map(|(idx, &x)|
+                        if idx % m.rows == column { Some(x) } else { None }
+                    ).collect();
+                    let r: Vec<u16> = va.iter().zip(&vb)
+                        .map(|(a,b)| {
+                            a * b
+                        })
+                        .collect();
+                    let sum = r.iter().fold(0, |acc, &item| acc + item);
+                    m_row.push(sum);
+                }
+                for v in m_row {
+                    mr.push(v);
+                }
+            }
+            Ok(M { rows: self.rows, columns: self.columns, values: mr})
         }
     }
 }
+
+// #[test]
+// fn t() {
+//     let ma = vec!["a","b","c","d","e","f"];
+//     let mb = vec!["w","x","y","z"];
+//     let mut mr: Vec<(String,String)> = Vec::new();
+//     let mb_rows = 2;
+//     let ma_column = 1;
+//
+//     for va in ma.chunks(2) {
+//         let mut m_row: Vec<Vec<String>> = Vec::new();
+//         for column in 0..va.len() {
+//             let vb: Vec<_> = mb.iter().enumerate().filter_map(|(idx, &x)|
+//                 if idx % mb_rows == column { Some(x) } else { None }
+//             ).collect();
+//             let r: Vec<String> = va.iter().zip(&vb)
+//                 .map(|(a,b)| {
+//                     let mut rs = String::new();
+//                     rs.push_str(a);
+//                     rs.push_str("*");
+//                     rs.push_str(b);
+//                     rs.to_string()
+//                 })
+//                 .collect();
+//             // let rr = r.join("+");
+//             // println!("{:?}", rr);
+//             m_row.push(r);
+//         }
+//         println!("{:?}", m_row);
+//     }
+// }

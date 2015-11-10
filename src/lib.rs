@@ -97,6 +97,7 @@ fn it_works() {
         },
         Err(why) => println!("{:?}", why),
     }
+    // assert_eq!(m * mt, vec![1, 0, 0, 2, 2, 0, 3, 0, 0]);
 
     // Strings
     let v: Vec<String> = vec!["A".to_string(), "B".to_string(), "C".to_string()];
