@@ -2,6 +2,7 @@ mod position;
 use position::Position;
 mod size;
 use size::Size;
+mod math;
 
 #[derive(Debug, Default)]
 pub struct M<T> {
@@ -15,7 +16,9 @@ trait MyClone {
 }
 
 impl MyClone for u16 {
-    fn clone(&self) -> Self { *self }
+    fn clone(&self) -> Self {
+        *self
+    }
 }
 
 impl MyClone for String {
@@ -46,35 +49,6 @@ impl<T> Convert<T> for Vec<T>
             idx += 1;
         }
         M { rows: s.rows(), columns: s.columns(), values: v }
-    }
-}
-
-pub trait MatrixMath<T> {
-    fn sum(&self, m: &M<T>) -> M<T>;
-}
-
-impl MatrixMath<u16> for M<u16> {
-    fn sum(&self, m: &M<u16>) -> M<u16> {
-        assert!((self.rows == m.rows) & (self.columns == m.columns));
-        let zv = self.values.iter().zip(&m.values);
-        let v: Vec<u16> = zv.map(|(a, b)| {
-            a + b
-        }).collect();
-        M { rows: self.rows, columns: self.columns, values: v}
-    }
-}
-
-impl MatrixMath<String> for M<String> {
-    fn sum(&self, m: &M<String>) -> M<String> {
-        assert!((self.rows == m.rows) & (self.columns == m.columns));
-        let zv = self.values.iter().zip(&m.values);
-        let v: Vec<String> = zv.map(|(a, b)| {
-            let mut s = String::from("");
-            s.push_str(a);
-            s.push_str(b);
-            s
-        }).collect();
-        M { rows: self.rows, columns: self.columns, values: v}
     }
 }
 
@@ -116,7 +90,13 @@ fn it_works() {
     assert_eq!(gv, 2);
     let mt: M<u16> = m.transpose();
     assert_eq!(mt.values, vec![1, 0, 0, 2, 2, 0, 3, 0, 0]);
-    assert_eq!(m.sum(&mt).values, vec![2, 2, 3, 2, 4, 0, 3, 0, 0]);
+    match m + mt {
+        Ok(mmt) => {
+            println!("{:?}", mmt);
+            assert_eq!(mmt.values, vec![2, 2, 3, 2, 4, 0, 3, 0, 0]);
+        },
+        Err(why) => println!("{:?}", why),
+    }
 
     // Strings
     let v: Vec<String> = vec!["A".to_string(), "B".to_string(), "C".to_string()];
@@ -124,7 +104,13 @@ fn it_works() {
     assert_eq!(m.values, vec!["A", "B", "C", "", "", "", "", "", ""]);
     let mt: M<String> = m.transpose();
     assert_eq!(mt.values, vec!["A", "", "", "B", "", "", "C", "", ""]);
-    assert_eq!(m.sum(&mt).values, vec!["AA", "B", "C", "B", "", "", "C", "", ""]);
+    match m + mt {
+        Ok(mmt) => {
+            println!("{:?}", mmt);
+            assert_eq!(mmt.values, vec!["AA", "B", "C", "B", "", "", "C", "", ""]);
+        },
+        Err(why) => println!("{:?}", why),
+    }
 
-    // assert!(false);
+    assert!(false);
 }
