@@ -1,11 +1,11 @@
-use super::M;
+use super::Matrix;
 
 //-------------------------------------------------------------------------------------------------
 use std::ops::Add;
 
-impl Add for M<String> {
-    type Output = Result<M<String>, String>;
-    fn add(self, m: M<String>) -> Result<M<String>, String> {
+impl Add for Matrix<String> {
+    type Output = Result<Matrix<String>, String>;
+    fn add(self, m: Matrix<String>) -> Result<Matrix<String>, String> {
         if (self.rows != m.rows) || (self.columns != m.columns) {
             Err("Some error message1".to_string())
         }
@@ -17,17 +17,17 @@ impl Add for M<String> {
                 s.push_str(b);
                 s
             }).collect();
-            Ok(M { rows: self.rows, columns: self.columns, values: v})
+            Ok(Matrix { rows: self.rows, columns: self.columns, values: v})
         }
     }
 }
 
 macro_rules! add_impl {
     ($($t:ty)*) => ($(
-        impl Add for M<$t> {
-            type Output = Result<M<$t>, String>;
+        impl Add for Matrix<$t> {
+            type Output = Result<Matrix<$t>, String>;
             #[inline]
-            fn add(self, m: M<$t>) -> Result<M<$t>, String> {
+            fn add(self, m: Matrix<$t>) -> Result<Matrix<$t>, String> {
                 if (self.rows != m.rows) && (self.columns != m.columns) {
                     Err("Some error message2".to_string())
                 }
@@ -36,7 +36,7 @@ macro_rules! add_impl {
                     let v: Vec<$t> = zv.map(|(a, b)| {
                         a + b
                     }).collect();
-                    Ok(M { rows: self.rows, columns: self.columns, values: v})
+                    Ok(Matrix { rows: self.rows, columns: self.columns, values: v})
                 }
             }
         }
@@ -51,10 +51,10 @@ use std::ops::Mul;
 
 macro_rules! mul_impl {
     ($($t:ty)*) => ($(
-        impl Mul for M<$t> {
-            type Output = Result<M<$t>, String>;
+        impl Mul for Matrix<$t> {
+            type Output = Result<Matrix<$t>, String>;
             #[inline]
-            fn mul(self, m: M<$t>) -> Result<M<$t>, String> {
+            fn mul(self, m: Matrix<$t>) -> Result<Matrix<$t>, String> {
                 if self.columns != m.rows {
                     Err("Some error message3".to_string())
                 }
@@ -78,7 +78,7 @@ macro_rules! mul_impl {
                             mr.push(v);
                         }
                     }
-                    Ok(M { rows: self.rows, columns: self.columns, values: mr})
+                    Ok(Matrix { rows: self.rows, columns: self.columns, values: mr})
                 }
             }
         }

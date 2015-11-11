@@ -5,49 +5,45 @@ use size::Size;
 mod math;
 
 #[derive(Debug, Default)]
-pub struct M<T> {
+pub struct Matrix<T> {
     pub rows: usize,
     pub columns: usize,
     values: Vec<T>
 }
 
-impl<T> Clone for M<T> where T: Clone {
-    fn clone(&self) -> M<T> {
+impl<T> Clone for Matrix<T> where T: Clone {
+    fn clone(&self) -> Matrix<T> {
         let v: Vec<T> = self.values.iter().map(|x| x.clone()).collect();
-        M { rows: self.rows, columns: self.columns, values: v }
+        Matrix { rows: self.rows, columns: self.columns, values: v }
     }
 }
 
-pub trait Convert<T> {
-    fn into_matrix(&self, s: &Size) -> M<T>;
-}
-
-impl<T> Convert<T> for Vec<T>
-    where T: Default + Clone {
-    fn into_matrix(&self, s: &Size) -> M<T> {
-        let mut v: Vec<T> = Vec::new();
-        let count = s.rows() * s.columns();
-        let mut it = self.iter();
+impl<T> From<(usize, usize, Vec<T>)> for Matrix<T> where T: Default + Clone {
+    fn from(v: (usize, usize, Vec<T>)) -> Matrix<T> {
+        let (rows, columns, data) = v; // Decompose
+        let mut dv: Vec<T> = Vec::new();
+        let count = rows * columns;
+        let mut it = data.iter();
         let mut idx = 0;
         while idx < count {
             let value: T = match it.next() {
                 Some(v) => v.clone(),
                 None => Default::default()
             };
-            v.push(value);
+            dv.push(value);
             idx += 1;
         }
-        M { rows: s.rows(), columns: s.columns(), values: v }
+        Matrix { rows: rows, columns: columns, values: dv }
     }
 }
 
-pub trait Matrix<T> {
+pub trait MatrixMod<T> {
     fn set(&mut self, p: &Position, v: T);
     fn get(&self, p: &Position) -> T;
-    fn transpose(&self) -> M<T>;
+    fn transpose(&self) -> Matrix<T>;
 }
 
-impl<T> Matrix<T> for M<T> where T: Default + Clone {
+impl<T> MatrixMod<T> for Matrix<T> where T: Default + Clone {
     fn set(&mut self, p: &Position, v: T) {
         self.values[p.column() + (p.row() * self.columns)] = v.clone();
     }
@@ -55,7 +51,7 @@ impl<T> Matrix<T> for M<T> where T: Default + Clone {
         let v = &self.values[p.column() + (p.row() * self.columns)];
         v.clone()
     }
-    fn transpose(&self) -> M<T> {
+    fn transpose(&self) -> Matrix<T> {
         let mut v: Vec<T> = Vec::new();
         for column in 0..self.columns {
             for row in 0..self.rows {
@@ -63,21 +59,23 @@ impl<T> Matrix<T> for M<T> where T: Default + Clone {
                 v.push(value.clone());
             }
         }
-        v.into_matrix(&(self.columns, self.rows))
+        Matrix::from((self.columns, self.rows, v))
+        // v.into_matrix(&(self.columns, self.rows))
     }
 }
 
 #[test]
 fn it_works() {
     let v: Vec<u16> = vec![1,2,3];
-    let mut m = v.into_matrix(&(3,3));
+    // let mut m = v.into_matrix(&(3,3));
+    let mut m = Matrix::from((3, 3, v));
     assert_eq!(m.values, vec![1, 2, 3, 0, 0, 0, 0, 0, 0]);
     let p = &(1,1);
     m.set(p, 2);
     assert_eq!(m.values, vec![1, 2, 3, 0, 2, 0, 0, 0, 0]);
     let gv = m.get(p);
     assert_eq!(gv, 2);
-    let mt: M<u16> = m.transpose();
+    let mt: Matrix<u16> = m.transpose();
     assert_eq!(mt.values, vec![1, 0, 0, 2, 2, 0, 3, 0, 0]);
     let sum = m.clone() + mt.clone();
     match sum {
@@ -98,9 +96,10 @@ fn it_works() {
 
     // Strings
     let v: Vec<String> = vec!["A".to_string(), "B".to_string(), "C".to_string()];
-    let m: M<String> = v.into_matrix(&(3,3));
+    // let m: M<String> = v.into_matrix(&(3,3));
+    let m = Matrix::from((3, 3, v));
     assert_eq!(m.values, vec!["A", "B", "C", "", "", "", "", "", ""]);
-    let mt: M<String> = m.transpose();
+    let mt: Matrix<String> = m.transpose();
     assert_eq!(mt.values, vec!["A", "", "", "B", "", "", "C", "", ""]);
     match m + mt {
         Ok(mmt) => {
