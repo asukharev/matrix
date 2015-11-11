@@ -11,21 +11,10 @@ pub struct M<T> {
     values: Vec<T>
 }
 
-trait MyClone {
-    fn clone(&self) -> Self;
-}
-
-impl MyClone for u16 {
-    fn clone(&self) -> Self {
-        *self
-    }
-}
-
-impl MyClone for String {
-    fn clone(&self) -> Self {
-        let mut s = String::from("");
-        s.push_str(self);
-        s
+impl<T> Clone for M<T> where T: Clone {
+    fn clone(&self) -> M<T> {
+        let v: Vec<T> = self.values.iter().map(|x| x.clone()).collect();
+        M { rows: self.rows, columns: self.columns, values: v }
     }
 }
 
@@ -34,7 +23,7 @@ pub trait Convert<T> {
 }
 
 impl<T> Convert<T> for Vec<T>
-    where T: Default + MyClone {
+    where T: Default + Clone {
     fn into_matrix(&self, s: &Size) -> M<T> {
         let mut v: Vec<T> = Vec::new();
         let count = s.rows() * s.columns();
@@ -58,7 +47,7 @@ pub trait Matrix<T> {
     fn transpose(&self) -> M<T>;
 }
 
-impl<T> Matrix<T> for M<T> where T: Default + MyClone {
+impl<T> Matrix<T> for M<T> where T: Default + Clone {
     fn set(&mut self, p: &Position, v: T) {
         self.values[p.column() + (p.row() * self.columns)] = v.clone();
     }
@@ -90,14 +79,22 @@ fn it_works() {
     assert_eq!(gv, 2);
     let mt: M<u16> = m.transpose();
     assert_eq!(mt.values, vec![1, 0, 0, 2, 2, 0, 3, 0, 0]);
-    match m + mt {
+    let sum = m.clone() + mt.clone();
+    match sum {
         Ok(mmt) => {
             println!("{:?}", mmt);
             assert_eq!(mmt.values, vec![2, 2, 3, 2, 4, 0, 3, 0, 0]);
         },
         Err(why) => println!("{:?}", why),
     }
-    // assert_eq!(m * mt, vec![1, 0, 0, 2, 2, 0, 3, 0, 0]);
+    let mul = m.clone() * mt.clone();
+    match mul {
+        Ok(mmt) => {
+            println!("{:?}", mmt);
+            assert_eq!(mmt.values, vec![14, 4, 0, 4, 4, 0, 0, 0, 0]);
+        },
+        Err(why) => println!("{:?}", why),
+    }
 
     // Strings
     let v: Vec<String> = vec!["A".to_string(), "B".to_string(), "C".to_string()];
