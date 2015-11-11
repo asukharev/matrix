@@ -60,61 +60,69 @@ impl<T> MatrixMod<T> for Matrix<T> where T: Default + Clone {
             }
         }
         Matrix::from((self.columns, self.rows, v))
-        // v.into_matrix(&(self.columns, self.rows))
     }
 }
 
 #[test]
 fn it_works() {
-    let v: Vec<u16> = vec![1,2,3];
-    // let mut m = v.into_matrix(&(3,3));
-    let mut m = Matrix::from((3, 3, v));
-    assert_eq!(m.values, vec![1, 2, 3, 0, 0, 0, 0, 0, 0]);
-    let p = &(1,1);
-    m.set(p, 2);
-    assert_eq!(m.values, vec![1, 2, 3, 0, 2, 0, 0, 0, 0]);
-    let gv = m.get(p);
-    assert_eq!(gv, 2);
-    let mt: Matrix<u16> = m.transpose();
-    assert_eq!(mt.values, vec![1, 0, 0, 2, 2, 0, 3, 0, 0]);
-    let sum = m.clone() + mt.clone();
-    match sum {
-        Ok(mmt) => {
-            println!("{:?}", mmt);
-            assert_eq!(mmt.values, vec![2, 2, 3, 2, 4, 0, 3, 0, 0]);
-        },
-        Err(why) => println!("{:?}", why),
-    }
-    let mul = m.clone() * mt.clone();
-    match mul {
-        Ok(mmt) => {
-            println!("{:?}", mmt);
-            assert_eq!(mmt.values, vec![14, 4, 0, 4, 4, 0, 0, 0, 0]);
-        },
-        Err(why) => println!("{:?}", why),
-    }
-    match 2 as u16 * m.clone() {
-        Ok(r) => {
-            println!("{:?}", r);
-            assert_eq!(r.values, vec![2, 4, 6, 0, 4, 0, 0, 0, 0]);
-        },
-        Err(why) => println!("{:?}", why),
+    {
+        let v: Vec<u16> = vec![1,2,3];
+        let mut m = Matrix::from((3, 3, v));
+        assert_eq!(m.values, vec![1, 2, 3, 0, 0, 0, 0, 0, 0]);
+
+        let p = &(1,1);
+        m.set(p, 2);
+        assert_eq!(m.values, vec![1, 2, 3, 0, 2, 0, 0, 0, 0]);
+
+        let gv = m.get(p);
+        assert_eq!(gv, 2);
+
+        let mt: Matrix<u16> = m.transpose();
+        assert_eq!(mt.values, vec![1, 0, 0, 2, 2, 0, 3, 0, 0]);
+
+        let mtt: Matrix<u16> = mt.transpose();
+        assert_eq!(m.values, mtt.values);
+
+        match m.clone() + mt.clone() {
+            Ok(r) => {
+                println!("{:?}", r);
+                assert_eq!(r.values, vec![2, 2, 3, 2, 4, 0, 3, 0, 0]);
+            },
+            Err(why) => println!("{:?}", why),
+        }
+
+        match m.clone() * mt.clone() {
+            Ok(r) => {
+                println!("{:?}", r);
+                assert_eq!(r.values, vec![14, 4, 0, 4, 4, 0, 0, 0, 0]);
+            },
+            Err(why) => println!("{:?}", why),
+        }
+
+        match 2 as u16 * m.clone() {
+            Ok(r) => {
+                println!("{:?}", r);
+                assert_eq!(r.values, vec![2, 4, 6, 0, 4, 0, 0, 0, 0]);
+            },
+            Err(why) => println!("{:?}", why),
+        }
     }
 
-    // Strings
-    let v: Vec<String> = vec!["A".to_string(), "B".to_string(), "C".to_string()];
-    // let m: M<String> = v.into_matrix(&(3,3));
-    let m = Matrix::from((3, 3, v));
-    assert_eq!(m.values, vec!["A", "B", "C", "", "", "", "", "", ""]);
-    let mt: Matrix<String> = m.transpose();
-    assert_eq!(mt.values, vec!["A", "", "", "B", "", "", "C", "", ""]);
-    match m + mt {
-        Ok(mmt) => {
-            println!("{:?}", mmt);
-            assert_eq!(mmt.values, vec!["AA", "B", "C", "B", "", "", "C", "", ""]);
-        },
-        Err(why) => println!("{:?}", why),
+    { // Strings
+        let v: Vec<String> = vec!["A".to_string(), "B".to_string(), "C".to_string()];
+        // let m: M<String> = v.into_matrix(&(3,3));
+        let m = Matrix::from((3, 3, v));
+        assert_eq!(m.values, vec!["A", "B", "C", "", "", "", "", "", ""]);
+        let mt: Matrix<String> = m.transpose();
+        assert_eq!(mt.values, vec!["A", "", "", "B", "", "", "C", "", ""]);
+        match m + mt {
+            Ok(mmt) => {
+                println!("{:?}", mmt);
+                assert_eq!(mmt.values, vec!["AA", "B", "C", "B", "", "", "C", "", ""]);
+            },
+            Err(why) => println!("{:?}", why),
+        }
     }
 
-    assert!(false);
+    // assert!(false);
 }
