@@ -93,6 +93,13 @@ fn it_works() {
         },
         Err(why) => println!("{:?}", why),
     }
+    match 2 as u16 * m.clone() {
+        Ok(r) => {
+            println!("{:?}", r);
+            assert_eq!(r.values, vec![2, 4, 6, 0, 4, 0, 0, 0, 0]);
+        },
+        Err(why) => println!("{:?}", why),
+    }
 
     // Strings
     let v: Vec<String> = vec!["A".to_string(), "B".to_string(), "C".to_string()];

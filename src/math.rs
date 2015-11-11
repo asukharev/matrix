@@ -87,6 +87,21 @@ macro_rules! mul_impl {
 
 mul_impl! { usize u8 u16 u32 u64 isize i8 i16 i32 i64 f32 f64 }
 
+macro_rules! mul_by_num_impl {
+    ($($t:ty)*) => ($(
+        impl Mul<Matrix<$t>> for $t {
+            type Output = Result<Matrix<$t>, String>;
+            #[inline]
+            fn mul(self, m: Matrix<$t>) -> Result<Matrix<$t>, String> {
+                let d = m.values.iter().map(|x| x * self).collect();
+                Ok(Matrix { rows: m.rows, columns: m.columns, values: d})
+            }
+        }
+    )*)
+}
+
+mul_by_num_impl! { usize u8 u16 u32 u64 isize i8 i16 i32 i64 f32 f64 }
+
 // #[test]
 // fn t() {
 //     let ma = vec!["a","b","c","d","e","f"];
