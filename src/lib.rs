@@ -40,6 +40,7 @@ impl<T> From<(usize, usize, Vec<T>)> for Matrix<T> where T: Default + Clone {
 pub trait MatrixMod<T> {
     fn set(&mut self, p: &Position, v: T);
     fn get(&self, p: &Position) -> T;
+    fn get_row(&self, row: usize) -> Vec<T>;
     fn transpose(&self) -> Matrix<T>;
 }
 
@@ -50,6 +51,14 @@ impl<T> MatrixMod<T> for Matrix<T> where T: Default + Clone {
     fn get(&self, p: &Position) -> T {
         let v = &self.values[p.column() + (p.row() * self.columns)];
         v.clone()
+    }
+    fn get_row(&self, row: usize) -> Vec<T> {
+        let mut v: Vec<T> = Vec::new();
+        for column in 0..self.columns {
+            let value = self.get(&(row, column));
+            v.push(value.clone());
+        }
+        v
     }
     fn transpose(&self) -> Matrix<T> {
         let mut v: Vec<T> = Vec::new();
