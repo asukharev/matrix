@@ -8,7 +8,7 @@ mod math;
 pub struct Matrix<T> {
     pub rows: usize,
     pub columns: usize,
-    values: Vec<T>
+    pub values: Vec<T>
 }
 
 impl<T> Clone for Matrix<T> where T: Clone {
@@ -112,6 +112,22 @@ fn it_works() {
             Ok(r) => {
                 println!("{:?}", r);
                 assert_eq!(r.values, vec![2, 4, 6, 0, 4, 0, 0, 0, 0]);
+            },
+            Err(why) => println!("{:?}", why),
+        }
+    }
+
+    {
+        let v0: Vec<u16> = vec![1,2,3,4,5,6];
+        let m0 = Matrix::from((3, 2, v0));
+
+        let v1: Vec<u16> = vec![1,1];
+        let m1 = Matrix::from((2, 1, v1));
+
+        match m0.clone() * m1.clone() {
+            Ok(r) => {
+                println!("{:?}", r);
+                assert_eq!(r.values, vec![3, 7, 11]);
             },
             Err(why) => println!("{:?}", why),
         }

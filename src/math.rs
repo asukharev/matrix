@@ -1,4 +1,4 @@
-use super::Matrix;
+use super::{Matrix, MatrixMod};
 
 //-------------------------------------------------------------------------------------------------
 use std::ops::Add;
@@ -59,26 +59,40 @@ macro_rules! mul_impl {
                     Err("Some error message3".to_string())
                 }
                 else {
+                    let mt = m.transpose();
+                    println!("self {:?}", self);
+                    println!("mt {:?}", mt);
                     let mut mr: Vec<$t> = Vec::new();
                     for va in self.values.chunks(self.columns) {
-                        let mut m_row: Vec<$t> = Vec::new();
-                        for column in 0..va.len() {
-                            let vb: Vec<$t> = m.values.iter().enumerate().filter_map(|(idx, &x)|
-                                if idx % m.rows == column { Some(x) } else { None }
-                            ).collect();
-                            let r: Vec<$t> = va.iter().zip(&vb)
-                                .map(|(a,b)| {
-                                    a * b
-                                })
-                                .collect();
-                            let sum = r.iter().fold(0 as $t, |acc, &item| acc + item);
-                            m_row.push(sum);
-                        }
-                        for v in m_row {
-                            mr.push(v);
-                        }
+                        let s: Vec<_> = va.iter().zip(&mt.values).collect();
+                        let c: $t = s.iter()
+                        .map(|&(a,b)| {
+                            a*b
+                        })
+                        .fold(0 as $t, |acc, item| acc + item);
+                        mr.push(c);
                     }
-                    Ok(Matrix { rows: self.rows, columns: self.columns, values: mr})
+                    Ok( Matrix::from((self.rows, m.columns, mr)) )
+                    // let mut mr: Vec<$t> = Vec::new();
+                    // for va in self.values.chunks(self.columns) {
+                    //     let mut m_row: Vec<$t> = Vec::new();
+                    //     for column in 0..va.len() {
+                    //         let vb: Vec<$t> = m.values.iter().enumerate().filter_map(|(idx, &x)|
+                    //             if idx % m.rows == column { Some(x) } else { None }
+                    //         ).collect();
+                    //         let r: Vec<$t> = va.iter().zip(&vb)
+                    //             .map(|(a,b)| {
+                    //                 a * b
+                    //             })
+                    //             .collect();
+                    //         let sum = r.iter().fold(0 as $t, |acc, &item| acc + item);
+                    //         m_row.push(sum);
+                    //     }
+                    //     for v in m_row {
+                    //         mr.push(v);
+                    //     }
+                    // }
+                    // Ok(Matrix { rows: self.rows, columns: self.columns, values: mr})
                 }
             }
         }
