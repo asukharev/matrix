@@ -12,13 +12,41 @@ pub struct Matrix<T> {
     pub values: Vec<T>
 }
 
-// impl<T> fmt::Display for Matrix<T> {
-//     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-//         write!(f, "----({})", self)
-//     }
-// }
+impl<T> Matrix<T> where T: Default + Clone {
+    pub fn iter(&self) -> MatrixIter<T> {
+        MatrixIter {
+            matrix: self,
+            index: 0
+        }
+    }
+    pub fn set(&mut self, p: &Position, v: T) {
+        self.values[p.column() + (p.row() * self.columns)] = v.clone();
+    }
+    pub fn get(&self, p: &Position) -> T {
+        let v = &self.values[p.column() + (p.row() * self.columns)];
+        v.clone()
+    }
+    pub fn get_row(&self, row: usize) -> Vec<T> {
+        let mut v: Vec<T> = Vec::new();
+        for column in 0..self.columns {
+            let value = self.get(&(row, column));
+            v.push(value.clone());
+        }
+        v
+    }
+    pub fn transpose(&self) -> Matrix<T> {
+        let mut v: Vec<T> = Vec::new();
+        for column in 0..self.columns {
+            for row in 0..self.rows {
+                let value = self.get(&(row, column));
+                v.push(value.clone());
+            }
+        }
+        Matrix::from((self.columns, self.rows, v))
+    }
+}
 
-impl fmt::Debug for Matrix<i32> {
+impl<T> fmt::Debug for Matrix<T> where T: Default + Clone + ToString {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         let mut output: String = String::new();
         for row in 0..self.rows {
@@ -33,6 +61,27 @@ impl fmt::Debug for Matrix<i32> {
             output.push_str("]");
         }
         write!(f, "{}", output)
+    }
+}
+
+pub struct MatrixIter<'a, T: 'a> {
+    matrix: &'a Matrix<T>,
+    index: usize
+}
+
+impl<'a, T> Iterator for MatrixIter<'a, T> where T: Default + Clone {
+    type Item = (T, (usize, usize));
+    fn next(&mut self) -> Option<(T, (usize, usize))> {
+        if self.index < self.matrix.rows * self.matrix.columns {
+            let row = self.index / self.matrix.columns;
+            let column = self.index % self.matrix.columns;
+            let v = self.matrix.get(&(row, column));
+            self.index += 1;
+            Some((v, (row, column)))
+        }
+        else {
+            None
+        }
     }
 }
 
@@ -62,47 +111,21 @@ impl<T> From<(usize, usize, Vec<T>)> for Matrix<T> where T: Default + Clone {
     }
 }
 
-pub trait MatrixMod<T> {
-    fn set(&mut self, p: &Position, v: T);
-    fn get(&self, p: &Position) -> T;
-    fn get_row(&self, row: usize) -> Vec<T>;
-    fn transpose(&self) -> Matrix<T>;
-}
-
-impl<T> MatrixMod<T> for Matrix<T> where T: Default + Clone {
-    fn set(&mut self, p: &Position, v: T) {
-        self.values[p.column() + (p.row() * self.columns)] = v.clone();
-    }
-    fn get(&self, p: &Position) -> T {
-        let v = &self.values[p.column() + (p.row() * self.columns)];
-        v.clone()
-    }
-    fn get_row(&self, row: usize) -> Vec<T> {
-        let mut v: Vec<T> = Vec::new();
-        for column in 0..self.columns {
-            let value = self.get(&(row, column));
-            v.push(value.clone());
-        }
-        v
-    }
-    fn transpose(&self) -> Matrix<T> {
-        let mut v: Vec<T> = Vec::new();
-        for column in 0..self.columns {
-            for row in 0..self.rows {
-                let value = self.get(&(row, column));
-                v.push(value.clone());
-            }
-        }
-        Matrix::from((self.columns, self.rows, v))
-    }
-}
-
 #[test]
 fn it_works() {
     {
-        let v: Vec<u16> = vec![1,2,3];
+        let v: Vec<i32> = vec![1,2,3];
         let mut m = Matrix::from((3, 3, v));
         assert_eq!(m.values, vec![1, 2, 3, 0, 0, 0, 0, 0, 0]);
+
+        {
+            let it = m.iter();
+            // for i in it {
+            //     println!("-- {:?}", i);
+            // }
+            let vv: Vec<_> = it.map(|(x, (_,_))| x * 2).collect();
+            println!("mapped {:?}", vv);
+        }
 
         let p = &(1,1);
         m.set(p, 2);
@@ -111,10 +134,10 @@ fn it_works() {
         let gv = m.get(p);
         assert_eq!(gv, 2);
 
-        let mt: Matrix<u16> = m.transpose();
+        let mt: Matrix<i32> = m.transpose();
         assert_eq!(mt.values, vec![1, 0, 0, 2, 2, 0, 3, 0, 0]);
 
-        let mtt: Matrix<u16> = mt.transpose();
+        let mtt: Matrix<i32> = mt.transpose();
         assert_eq!(m.values, mtt.values);
 
         match m.clone() + mt.clone() {
@@ -133,7 +156,7 @@ fn it_works() {
             Err(why) => println!("{:?}", why),
         }
 
-        match 2 as u16 * m.clone() {
+        match 2 as i32 * m.clone() {
             Ok(r) => {
                 println!("{:?}", r);
                 assert_eq!(r.values, vec![2, 4, 6, 0, 4, 0, 0, 0, 0]);
@@ -143,10 +166,10 @@ fn it_works() {
     }
 
     {
-        let v0: Vec<u16> = vec![1,2,3,4,5,6];
+        let v0: Vec<i32> = vec![1,2,3,4,5,6];
         let m0 = Matrix::from((3, 2, v0));
 
-        let v1: Vec<u16> = vec![1,1];
+        let v1: Vec<i32> = vec![1,1];
         let m1 = Matrix::from((2, 1, v1));
 
         match m0.clone() * m1.clone() {
