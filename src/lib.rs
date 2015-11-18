@@ -29,6 +29,14 @@ impl<T> Matrix<T> where T: Default + Clone {
         }
         v
     }
+    pub fn get_column(&self, column: usize) -> Vec<T> {
+        let mut v: Vec<T> = Vec::new();
+        for row in 0..self.rows {
+            let value = self.get(row, column);
+            v.push(value.clone());
+        }
+        v
+    }
     pub fn transpose(&self) -> Matrix<T> {
         let mut v: Vec<T> = Vec::new();
         for column in 0..self.columns {
@@ -73,6 +81,7 @@ impl<T> fmt::Debug for Matrix<T> where T: Default + Clone + ToString {
                 output.push_str(&value.to_string());
                 if column < self.columns - 1 {
                     output.push(',');
+                    output.push('\t');
                 }
             }
             output.push_str("]");
@@ -92,19 +101,19 @@ impl<T> Clone for Matrix<T> where T: Clone {
 impl<T> From<(usize, usize, Vec<T>)> for Matrix<T> where T: Default + Clone {
     fn from(v: (usize, usize, Vec<T>)) -> Matrix<T> {
         let (rows, columns, data) = v; // Decompose
-        let mut dv: Vec<T> = Vec::new();
-        let count = rows * columns;
+        let m_data: Vec<T> = (0..(rows * columns)).map(|_| T::default()).collect();
+        let mut m: Matrix<T> = Matrix{ rows: rows, columns: columns, values: m_data };
         let mut it = data.iter();
-        let mut idx = 0;
-        while idx < count {
-            let value: T = match it.next() {
-                Some(v) => v.clone(),
-                None => Default::default()
-            };
-            dv.push(value);
-            idx += 1;
+        for column in 0..columns {
+            for row in 0..rows {
+                let value: T = match it.next() {
+                    Some(v) => v.clone(),
+                    None => Default::default()
+                };
+                m.set(row, column, value);
+            }
         }
-        Matrix { rows: rows, columns: columns, values: dv }
+        m
     }
 }
 
