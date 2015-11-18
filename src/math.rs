@@ -49,37 +49,62 @@ add_impl! { usize u8 u16 u32 u64 isize i8 i16 i32 i64 f32 f64 }
 //-------------------------------------------------------------------------------------------------
 use std::ops::Mul;
 
-macro_rules! mul_impl {
-    ($($t:ty)*) => ($(
-        impl Mul for Matrix<$t> {
-            type Output = Result<Matrix<$t>, String>;
-            #[inline]
-            fn mul(self, m: Matrix<$t>) -> Result<Matrix<$t>, String> {
-                if self.columns != m.rows {
-                    Err("Some error message3".to_string())
-                }
-                else {
-                    let mt = m.transpose();
-                    let mut mr: Vec<$t> = Vec::new();
-                    for va in self.values.chunks(self.columns) {
-                        for vb in mt.values.chunks(m.rows) {
-                            let s: Vec<_> = va.iter().zip(vb).collect();
-                            let c: $t = s.iter()
-                            .map(|&(a,b)| {
-                                a*b
-                            })
-                            .fold(0 as $t, |acc, item| acc + item);
-                            mr.push(c);
-                        }
-                    }
-                    Ok( Matrix::from((self.rows, m.columns, mr)) )
+impl<T> Mul for Matrix<T> where T: Default + Clone + Add<Output=T> + Mul<Output=T> {
+    type Output = Result<Matrix<T>, String>;
+    fn mul(self, m: Matrix<T>) -> Result<Matrix<T>, String> {
+        if self.columns != m.rows {
+            Err("Some error message3".to_string())
+        }
+        else {
+            let mt = m.transpose();
+            let mut mr: Vec<T> = Vec::new();
+            for va in self.values.chunks(self.columns) {
+                for vb in mt.values.chunks(m.rows) {
+                    let s: Vec<_> = va.iter().zip(vb).collect();
+                    let c: T = s.iter()
+                        .map(|&(a,b)| {
+                            a.clone() * b.clone()
+                        })
+                        .fold(T::default(), |acc, item| acc + item);
+                    mr.push(c);
                 }
             }
+            Ok( Matrix::from((self.rows, m.columns, mr)) )
         }
-    )*)
+    }
 }
 
-mul_impl! { usize u8 u16 u32 u64 isize i8 i16 i32 i64 f32 f64 }
+// macro_rules! mul_impl {
+//     ($($t:ty)*) => ($(
+//         impl Mul for Matrix<$t> {
+//             type Output = Result<Matrix<$t>, String>;
+//             #[inline]
+//             fn mul(self, m: Matrix<$t>) -> Result<Matrix<$t>, String> {
+//                 if self.columns != m.rows {
+//                     Err("Some error message3".to_string())
+//                 }
+//                 else {
+//                     let mt = m.transpose();
+//                     let mut mr: Vec<$t> = Vec::new();
+//                     for va in self.values.chunks(self.columns) {
+//                         for vb in mt.values.chunks(m.rows) {
+//                             let s: Vec<_> = va.iter().zip(vb).collect();
+//                             let c: $t = s.iter()
+//                             .map(|&(a,b)| {
+//                                 a*b
+//                             })
+//                             .fold(0 as $t, |acc, item| acc + item);
+//                             mr.push(c);
+//                         }
+//                     }
+//                     Ok( Matrix::from((self.rows, m.columns, mr)) )
+//                 }
+//             }
+//         }
+//     )*)
+// }
+//
+// mul_impl! { usize u8 u16 u32 u64 isize i8 i16 i32 i64 f32 f64 }
 
 macro_rules! mul_by_num_impl {
     ($($t:ty)*) => ($(
