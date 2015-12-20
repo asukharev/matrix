@@ -7,7 +7,7 @@ impl Add for Matrix<String> {
     type Output = Result<Matrix<String>, String>;
     fn add(self, m: Matrix<String>) -> Result<Matrix<String>, String> {
         if (self.rows != m.rows) || (self.columns != m.columns) {
-            Err("Some error message1".to_string())
+            Err("Dissimilar multidimensional matrix".to_string())
         }
         else {
             let zv = self.values.iter().zip(&m.values);
@@ -29,7 +29,7 @@ macro_rules! add_impl {
             #[inline]
             fn add(self, m: Matrix<$t>) -> Result<Matrix<$t>, String> {
                 if (self.rows != m.rows) && (self.columns != m.columns) {
-                    Err("Some error message2".to_string())
+                    Err("Dissimilar multidimensional matrix".to_string())
                 }
                 else {
                     let zv = self.values.iter().zip(&m.values);
@@ -53,7 +53,7 @@ impl<T> Mul for Matrix<T> where T: Default + Clone + Add<Output=T> + Mul<Output=
     type Output = Result<Matrix<T>, String>;
     fn mul(self, m: Matrix<T>) -> Result<Matrix<T>, String> {
         if self.columns != m.rows {
-            Err("Some error message3".to_string())
+            Err("Dissimilar multidimensional matrix".to_string())
         }
         else {
             let mt = m.transpose();
