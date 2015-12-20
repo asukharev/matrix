@@ -97,7 +97,6 @@ impl<T> Clone for Matrix<T> where T: Clone {
     }
 }
 
-//-------------------------------------------------------------------------------------------------
 impl<T> From<(usize, usize, Vec<T>)> for Matrix<T> where T: Default + Clone {
     fn from(v: (usize, usize, Vec<T>)) -> Matrix<T> {
         let (rows, columns, data) = v; // Decompose
@@ -116,22 +115,3 @@ impl<T> From<(usize, usize, Vec<T>)> for Matrix<T> where T: Default + Clone {
         m
     }
 }
-
-// impl<'a, T> From<(usize, usize, Vec<&'a T>)> for Matrix<T> where T: Default + Clone {
-//     fn from(v: (usize, usize, Vec<&'a T>)) -> Matrix<T> {
-//         let (rows, columns, data) = v; // Decompose
-//         let mut dv: Vec<T> = Vec::new();
-//         let count = rows * columns;
-//         let mut it = data.iter();
-//         let mut idx = 0;
-//         while idx < count {
-//             let value: T = match it.next() {
-//                 Some(v) => (*v).clone(),
-//                 None => Default::default()
-//             };
-//             dv.push(value);
-//             idx += 1;
-//         }
-//         Matrix { rows: rows, columns: columns, values: dv }
-//     }
-// }
