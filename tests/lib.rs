@@ -107,6 +107,23 @@ fn check_multiplication_by_vector() {
     }
 }
 
+#[test]
+fn check_multiplication_by_vector_err() {
+    let v0: Vec<i32> = vec![1, 2, 3, 4, 5, 6];
+    let m0 = Matrix::from((3, 2, v0));
+
+    let v1: Vec<i32> = vec![];
+    let m1 = Matrix::from((3, 2, v1));
+
+    let r = match m0 * m1 {
+        Ok(_) => {
+            "".to_string()
+        },
+        Err(why) => why,
+    };
+    assert_eq!(r, "Dissimilar multidimensional matrix");
+}
+
 //
 // ⎡1, 4, 7⎤   ⎡1, 2, 3⎤   ⎡ 2,  6, 10⎤
 // ⎢2, 5, 8⎥ + ⎢4, 5, 6⎥ = ⎢ 6, 10, 14⎥
@@ -124,6 +141,23 @@ fn check_sum() {
         },
         Err(why) => println!("{:?}", why),
     }
+}
+
+#[test]
+fn check_sum_err() {
+    let v0: Vec<i32> = vec![1, 2, 3, 4, 5, 6];
+    let m0 = Matrix::from((3, 2, v0));
+
+    let v1: Vec<i32> = vec![];
+    let m1 = Matrix::from((3, 2, v1));
+
+    let r = match m0 * m1 {
+        Ok(_) => {
+            "".to_string()
+        },
+        Err(why) => why,
+    };
+    assert_eq!(r, "Dissimilar multidimensional matrix");
 }
 
 //-------------------------------------------------------------------------------------------------
