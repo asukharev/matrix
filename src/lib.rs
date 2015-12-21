@@ -38,13 +38,7 @@ impl<T> Matrix<T> where T: Default + Clone {
         v
     }
     pub fn transpose(&self) -> Matrix<T> {
-        let mut v: Vec<T> = Vec::new();
-        for row in 0..self.rows {
-            for column in 0..self.columns {
-                let value = self.get(row, column);
-                v.push(value.clone());
-            }
-        }
+        let v: Vec<T> = self.values.clone();
         Matrix::from((self.columns, self.rows, v))
     }
 }
