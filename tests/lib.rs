@@ -44,7 +44,7 @@ fn check_get_value() {
 //
 #[test]
 fn check_transpose() {
-    {
+    { // Matrix 3x3
         let v: Vec<i32> = vec![1, 2, 3, 0, 2, 0, 0, 2, 0];
         let m = Matrix::from((3, 3, v));
         let mt: Matrix<i32> = m.transpose();
@@ -52,7 +52,23 @@ fn check_transpose() {
         let mtt: Matrix<i32> = mt.transpose();
         assert_eq!(m.values, mtt.values);
     }
-    {
+    { // Matrix 3x2
+        let v: Vec<i32> = vec![1, 2, 3, 0];
+        let m = Matrix::from((3, 2, v));
+        let mt: Matrix<i32> = m.transpose();
+        assert_eq!(mt.values, vec![1, 2, 3, 0, 0, 0]);
+        let mtt: Matrix<i32> = mt.transpose();
+        assert_eq!(m.values, mtt.values);
+    }
+    { // Vector
+        let v: Vec<i32> = vec![1, 2, 3];
+        let m = Matrix::from((3, 1, v));
+        let mt: Matrix<i32> = m.transpose();
+        assert_eq!(mt.values, vec![1, 2, 3]);
+        let mtt: Matrix<i32> = mt.transpose();
+        assert_eq!(m.values, mtt.values);
+    }
+    { // String Matrix 3x3
         let v: Vec<String> = vec!["A".to_string(), "B".to_string(), "C".to_string()];
         let m = Matrix::from((3, 3, v));
         let mt: Matrix<String> = m.transpose();
