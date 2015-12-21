@@ -83,12 +83,12 @@ fn check_transpose() {
 //
 #[test]
 fn check_multiplication_by_number() {
-    let v: Vec<i32> = vec![1, 2, 3, 4, 5, 6, 7, 8, 9];
+    let v: Vec<f32> = vec![1f32, 2f32, 3f32, 4f32, 5f32, 6f32, 7f32, 8f32, 9f32];
     let m = Matrix::from((3, 3, v));
 
-    match 2 as i32 * m.clone() {
+    match 0.5f32 * m.clone() {
         Ok(r) => {
-            assert_eq!(r.values, vec![2, 4, 6, 8, 10, 12, 14, 16, 18]);
+            assert_eq!(r.values, vec![0.5f32, 2f32, 3.5f32, 1f32, 2.5f32, 4f32, 1.5f32, 3f32, 4.5f32]);
         },
         Err(why) => println!("{:?}", why),
     }
