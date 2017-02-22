@@ -81,7 +81,7 @@ macro_rules! mul_by_num_impl {
             fn mul(self, m: Matrix<$t>) -> Result<Matrix<$t>, String> {
                 let d = m.values.iter().map(|x| x * self).collect();
                 let m = Matrix::from((m.rows, m.columns, d));
-                Ok(m.transpose())
+                Ok(m)
             }
         }
     )*)

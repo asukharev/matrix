@@ -6,12 +6,12 @@ fn check_new() {
     {
         let v: Vec<i32> = vec![1, 2, 3];
         let m = Matrix::from((3, 3, v));
-        assert_eq!(m.values, vec![1, 0, 0, 2, 0, 0, 3, 0, 0]);
+        assert_eq!(m.values, vec![1, 2, 3, 0, 0, 0, 0, 0, 0]);
     }
     {
         let vs: Vec<String> = vec!["A".to_string(), "B".to_string(), "C".to_string()];
         let ms = Matrix::from((3, 3, vs));
-        assert_eq!(ms.values, vec!["A", "", "", "B", "", "", "C", "", ""]);
+        assert_eq!(ms.values, vec!["A", "B", "C", "", "", "", "", "", ""]);
     }
 }
 
@@ -21,7 +21,7 @@ fn check_set_value() {
     let mut m = Matrix::from((3, 3, v));
     // Set element of row and column
     m.set(1, 1, 2);
-    assert_eq!(m.values, vec![1, 0, 0, 2, 2, 0, 3, 0, 0]);
+    assert_eq!(m.values, vec![1, 2, 3, 0, 2, 0, 0, 0, 0]);
 }
 
 #[test]
@@ -31,7 +31,7 @@ fn check_get_value() {
     for column in 0..m.columns {
         for row in 0..m.rows {
             let mv = m.get(row, column);
-            let idx = row + (column * m.columns);
+            let idx = column + (row * m.rows);
             assert_eq!(*mv, v[idx]);
         }
     }
@@ -44,23 +44,26 @@ fn check_get_value() {
 //
 #[test]
 fn check_transpose() {
-    { // Matrix 3x3
-        let v: Vec<i32> = vec![1, 2, 3, 0, 2, 0, 0, 2, 0];
+    {
+        // Matrix 3x3
+        let v: Vec<i32> = vec![1, 0, 0, 2, 2, 2, 3, 0, 0];
         let m = Matrix::from((3, 3, v));
         let mt: Matrix<i32> = m.transpose();
         assert_eq!(mt.values, vec![1, 2, 3, 0, 2, 0, 0, 2, 0]);
         let mtt: Matrix<i32> = mt.transpose();
         assert_eq!(m.values, mtt.values);
     }
-    { // Matrix 3x2
+    {
+        // Matrix 3x2
         let v: Vec<i32> = vec![1, 2, 3, 0];
         let m = Matrix::from((3, 2, v));
         let mt: Matrix<i32> = m.transpose();
-        assert_eq!(mt.values, vec![1, 2, 3, 0, 0, 0]);
+        assert_eq!(mt.values, vec![1, 0, 2, 0, 3, 0]);
         let mtt: Matrix<i32> = mt.transpose();
         assert_eq!(m.values, mtt.values);
     }
-    { // Vector
+    {
+        // Vector
         let v: Vec<i32> = vec![1, 2, 3];
         let m = Matrix::from((3, 1, v));
         let mt: Matrix<i32> = m.transpose();
@@ -68,11 +71,12 @@ fn check_transpose() {
         let mtt: Matrix<i32> = mt.transpose();
         assert_eq!(m.values, mtt.values);
     }
-    { // String Matrix 3x3
+    {
+        // String Matrix 3x3
         let v: Vec<String> = vec!["A".to_string(), "B".to_string(), "C".to_string()];
         let m = Matrix::from((3, 3, v));
         let mt: Matrix<String> = m.transpose();
-        assert_eq!(mt.values, vec!["A", "B", "C", "", "", "", "", "", ""]);
+        assert_eq!(mt.values, vec!["A", "", "", "B", "", "", "C", "", ""]);
     }
 }
 
@@ -83,13 +87,14 @@ fn check_transpose() {
 //
 #[test]
 fn check_multiplication_by_number() {
-    let v: Vec<f32> = vec![1f32, 2f32, 3f32, 4f32, 5f32, 6f32, 7f32, 8f32, 9f32];
+    let v: Vec<f32> = vec![1f32, 0f32, 0f32, 2f32, 0f32, 4f32, 3f32, 0f32, 0f32];
     let m = Matrix::from((3, 3, v));
 
     match 0.5f32 * m.clone() {
         Ok(r) => {
-            assert_eq!(r.values, vec![0.5f32, 2f32, 3.5f32, 1f32, 2.5f32, 4f32, 1.5f32, 3f32, 4.5f32]);
-        },
+            assert_eq!(r.values,
+                       vec![0.5f32, 0f32, 0f32, 1f32, 0f32, 2f32, 1.5f32, 0f32, 0f32]);
+        }
         Err(why) => println!("{:?}", why),
     }
 }
@@ -102,14 +107,14 @@ fn check_multiplication_by_number() {
 #[test]
 fn check_multiplication() {
     {
-        let v: Vec<i32> = vec![1, 2, 3, 4, 5, 6, 7, 8, 9];
+        let v: Vec<i32> = vec![1, 4, 7, 2, 5, 8, 3, 6, 9];
         let m = Matrix::from((3, 3, v));
         let mt: Matrix<i32> = m.transpose();
 
         match m * mt {
             Ok(r) => {
                 assert_eq!(r.values, vec![66, 78, 90, 78, 93, 108, 90, 108, 126]);
-            },
+            }
             Err(why) => println!("{:?}", why),
         }
     }
@@ -131,7 +136,7 @@ fn check_multiplication_by_vector() {
     match m0 * m1 {
         Ok(r) => {
             assert_eq!(r.values, vec![5, 7, 9]);
-        },
+        }
         Err(why) => println!("{:?}", why),
     }
 }
@@ -145,9 +150,7 @@ fn check_multiplication_by_vector_err() {
     let m1 = Matrix::from((3, 2, v1));
 
     let r = match m0 * m1 {
-        Ok(_) => {
-            "".to_string()
-        },
+        Ok(_) => "".to_string(),
         Err(why) => why,
     };
     assert_eq!(r, "Dissimilar multidimensional matrix");
@@ -167,7 +170,7 @@ fn check_sum() {
         match m.clone() + mt.clone() {
             Ok(r) => {
                 assert_eq!(r.values, vec![2, 6, 10, 6, 10, 14, 10, 14, 18]);
-            },
+            }
             Err(why) => println!("{:?}", why),
         }
     }
@@ -180,7 +183,7 @@ fn check_sum() {
             Ok(mmt) => {
                 println!("{:?}", mmt);
                 assert_eq!(mmt.values, vec!["AA", "B", "C", "B", "", "", "C", "", ""]);
-            },
+            }
             Err(why) => println!("{:?}", why),
         }
     }
@@ -195,9 +198,7 @@ fn check_sum_err() {
     let m1 = Matrix::from((3, 2, v1));
 
     let r = match m0 * m1 {
-        Ok(_) => {
-            "".to_string()
-        },
+        Ok(_) => "".to_string(),
         Err(why) => why,
     };
     assert_eq!(r, "Dissimilar multidimensional matrix");

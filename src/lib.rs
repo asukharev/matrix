@@ -5,14 +5,16 @@ use std::fmt;
 pub struct Matrix<T> {
     pub rows: usize,
     pub columns: usize,
-    pub values: Vec<T>
+    pub values: Vec<T>,
 }
 
-impl<T> Matrix<T> where T: Default + Clone {
+impl<T> Matrix<T>
+    where T: Default + Clone
+{
     pub fn iter(&self) -> MatrixIter<T> {
         MatrixIter {
             matrix: self,
-            index: 0
+            index: 0,
         }
     }
     pub fn set(&mut self, row: usize, column: usize, v: T) {
@@ -38,17 +40,27 @@ impl<T> Matrix<T> where T: Default + Clone {
         v
     }
     pub fn transpose(&self) -> Matrix<T> {
-        let v: Vec<T> = self.values.clone();
-        Matrix::from((self.columns, self.rows, v))
+        let new_values : Vec<T> = (0..self.values.len())
+            .enumerate()
+            .map(|(idx, _)| {
+                let r = idx % self.rows;
+                let c = idx / self.rows;
+                let t_idx = c + (r * self.columns);
+                self.values[t_idx].clone()
+            })    
+            .collect();
+        Matrix::from((self.rows, self.columns, new_values))
     }
 }
 
 pub struct MatrixIter<'a, T: 'a> {
     matrix: &'a Matrix<T>,
-    index: usize
+    index: usize,
 }
 
-impl<'a, T> Iterator for MatrixIter<'a, T> where T: Default + Clone {
+impl<'a, T> Iterator for MatrixIter<'a, T>
+    where T: Default + Clone
+{
     type Item = (&'a T, (usize, usize));
     fn next(&mut self) -> Option<(&'a T, (usize, usize))> {
         if self.index < self.matrix.rows * self.matrix.columns {
@@ -58,14 +70,15 @@ impl<'a, T> Iterator for MatrixIter<'a, T> where T: Default + Clone {
             let v = self.matrix.get(row, column);
             self.index += 1;
             Some((v, position))
-        }
-        else {
+        } else {
             None
         }
     }
 }
 
-impl<T> fmt::Debug for Matrix<T> where T: Default + Clone + ToString {
+impl<T> fmt::Debug for Matrix<T>
+    where T: Default + Clone + ToString
+{
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         let mut output: String = String::new();
         for row in 0..self.rows {
@@ -84,28 +97,37 @@ impl<T> fmt::Debug for Matrix<T> where T: Default + Clone + ToString {
     }
 }
 
-impl<T> Clone for Matrix<T> where T: Clone {
+impl<T> Clone for Matrix<T>
+    where T: Clone
+{
     fn clone(&self) -> Matrix<T> {
         let v: Vec<T> = self.values.iter().map(|x| x.clone()).collect();
-        Matrix { rows: self.rows, columns: self.columns, values: v }
+        Matrix {
+            rows: self.rows,
+            columns: self.columns,
+            values: v,
+        }
     }
 }
 
-impl<T> From<(usize, usize, Vec<T>)> for Matrix<T> where T: Default + Clone {
+impl<T> From<(usize, usize, Vec<T>)> for Matrix<T>
+    where T: Default + Clone
+{
     fn from(v: (usize, usize, Vec<T>)) -> Matrix<T> {
-        let (rows, columns, data) = v; // Decompose
-        let m_data: Vec<T> = (0..(rows * columns)).map(|_| T::default()).collect();
-        let mut m: Matrix<T> = Matrix{ rows: rows, columns: columns, values: m_data };
-        let mut it = data.iter();
-        for column in 0..columns {
-            for row in 0..rows {
-                let value: T = match it.next() {
-                    Some(v) => v.clone(),
-                    None => Default::default()
-                };
-                m.set(row, column, value);
-            }
+        let (columns, rows, data) = v;
+        let m_data: Vec<T> = (0..(rows * columns))
+            .enumerate()
+            .map(|(idx, _)| if idx < data.len() {
+                data[idx].clone()
+            } else {
+                T::default()
+            })
+            .collect();
+        
+        Matrix {
+            rows: rows,
+            columns: columns,
+            values: m_data,
         }
-        m
     }
 }
